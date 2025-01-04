@@ -4,6 +4,7 @@
 // Constants
 const int NUM_CHANNELS = 8;
 const int MIDI_MAX_VALUE = 127;
+const int PWM_MAX_VALUE = 255;
 const int DEBOUNCE_DELAY = 20;
 const int MIDI_BAUD_RATE = 31250;
 const int THRESHOLD = 2;
@@ -25,22 +26,21 @@ const int B = 3;
 const int C = 4;
 Encoder myEnc(5, 6);
 const int buttonPin = 7;
-const int pwmPin = 10; // PWM pin for LED control
+const int pwmPin = 10;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
 
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int settingsMidiCC[NUM_CHANNELS][2] = {
-    {1, 2},  // Channel 1, CC 0
-    {1, 4},  // Channel 1, CC 1
-    {2, 6},  // Channel 2, CC 2
-    {2, 8},  // Channel 2, CC 3
-    {1, 10}, // Channel 1, CC 4
-    {1, 22}, // Channel 1, CC 5
-    {2, 33}, // Channel 2, CC 6
-    {2, 44}  // Channel 2, CC 7
-};
+    {1, 2},
+    {1, 4},
+    {2, 6},
+    {2, 8},
+    {1, 10},
+    {1, 22},
+    {2, 33},
+    {2, 44}};
 int oldPosition = 0;
 int debouncedPosition = 0;
 unsigned long lastEncoderDebounceTime = 0;
@@ -53,7 +53,11 @@ void setup()
   pinMode(B, OUTPUT);
   pinMode(C, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(pwmPin, OUTPUT); // Initialize PWM pin for LED control
+  pinMode(pwmPin, OUTPUT);
+
+  // Increase PWM frequency for Timer 2 (pins 3 and 11 on Arduino Uno)
+  TCCR2B = TCCR2B & B11111000 | B00000001; // Set Timer 2 prescaler to 1 (31.25 kHz PWM frequency)
+
   lcd.init();
   lcd.backlight();
   for (int i = 0; i < NUM_CHANNELS; i++)
@@ -111,11 +115,10 @@ void updateDisplay()
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
 
-  // Display selected channel and CC number
   lcd.setCursor(0, 0);
   lcd.print("CC:");
   lcd.print(settingsMidiCC[selectedChannel][1]);
-  lcd.print(" "); // Clear any leftover characters
+  lcd.print(" ");
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
   lcd.print(settingsMidiCC[selectedChannel][0]);
@@ -126,13 +129,10 @@ void updateDisplay()
 
     if (lastDisplayedValues[channel] != barLevel || lastSelectedChannel != selectedChannel)
     {
-      int col = 8 + channel; // Start from the 9th column for bars
-
-      // Display bar levels on the first row
+      int col = 8 + channel;
       lcd.setCursor(col, 0);
       lcd.write((byte)barLevel);
 
-      // Display asterisk under the selected channel
       lcd.setCursor(col, 1);
       lcd.print(channel == selectedChannel ? "*" : " ");
 
@@ -150,11 +150,11 @@ void selectChannel(int channel)
   digitalWrite(C, (channel >> 2) & 0x01);
 }
 
-void sendMIDIControlChange(int channel, int ccNumber, int value)
+void sendMIDIControlChange(int midiChannel, int ccNumber, int value)
 {
-  Serial.write(0xB0 | (channel - 1)); // Control Change message on the correct MIDI channel
-  Serial.write(ccNumber);             // MIDI CC number
-  Serial.write(value);                // Value (0-127)
+  Serial.write(0xB0 | (midiChannel - 1));
+  Serial.write(ccNumber);
+  Serial.write(value);
 }
 
 void readAndSendMidiValues()
@@ -173,8 +173,7 @@ void readAndSendMidiValues()
       lastPrintedValues[channel] = midiValue;
       sendMIDIControlChange(settingsMidiCC[channel][0], settingsMidiCC[channel][1], midiValue);
     }
-
-    // Set PWM value for the corresponding LED
-    analogWrite(pwmPin, midiValue); // Assuming pwmPin for LED control
+    int pwmValue = 180; // map(analogValues[channel], 0, 1023, 0, PWM_MAX_VALUE);
+    analogWrite(pwmPin, pwmValue);
   }
 }
