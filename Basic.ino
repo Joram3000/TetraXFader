@@ -28,9 +28,18 @@ const int buttonPin = 7;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
-int settingsMidiChannels[NUM_CHANNELS][2] = {{1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4}, {2, 5}, {2, 4}, {2, 3}};
 
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
+int settingsMidiCC[NUM_CHANNELS][2] = {
+    {1, 0}, // Channel 1, CC 0
+    {1, 1}, // Channel 1, CC 1
+    {2, 2}, // Channel 2, CC 2
+    {2, 3}, // Channel 2, CC 3
+    {1, 4}, // Channel 1, CC 4
+    {1, 5}, // Channel 1, CC 5
+    {2, 6}, // Channel 2, CC 6
+    {2, 7}  // Channel 2, CC 7
+};
 int oldPosition = 0;
 int debouncedPosition = 0;
 unsigned long lastEncoderDebounceTime = 0;
@@ -57,7 +66,7 @@ void loop()
   handleButtonPress();
   handleEncoder();
   updateDisplay();
-  readAndSendMidiValues();
+  sendMidiValues();
 }
 
 void handleButtonPress()
@@ -76,7 +85,7 @@ void handleButtonPress()
 
 void handleEncoder()
 {
-  int newPosition = myEnc.read() / 3;
+  int newPosition = myEnc.read() / 4;
   if (newPosition != oldPosition)
   {
     lastEncoderDebounceTime = millis();
@@ -89,7 +98,7 @@ void handleEncoder()
     {
       debouncedPosition = oldPosition;
       int relativeChange = debouncedPosition - initialEncoderPosition;
-      settingsMidiChannels[selectedChannel][1] = constrain(settingsMidiChannels[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+      settingsMidiCC[selectedChannel][1] = constrain(settingsMidiCC[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
       initialEncoderPosition = debouncedPosition;
     }
   }
@@ -100,16 +109,14 @@ void updateDisplay()
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
 
-  // Display MIDI channel in the top left corner
-  lcd.setCursor(1, 0);
-  lcd.print("MIDI");
-  lcd.print(settingsMidiChannels[selectedChannel][0]);
-
-  // Display MIDI channel on the left side of the second row
-  lcd.setCursor(1, 1);
-  lcd.print("CC");
-  lcd.print(settingsMidiChannels[selectedChannel][1] + 1);
-  lcd.print("   "); // Clear any leftover characters
+  // Display selected channel and CC number
+  lcd.setCursor(0, 0);
+  lcd.print("CC:");
+  lcd.print(settingsMidiCC[selectedChannel][1]);
+  lcd.print(" "); // Clear any leftover characters
+  lcd.setCursor(0, 1);
+  lcd.print("Ch:");
+  lcd.print(settingsMidiCC[selectedChannel][0]);
 
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
@@ -134,35 +141,41 @@ void updateDisplay()
   lastSelectedChannel = selectedChannel;
 }
 
+// Function to send a MIDI Control Change (CC) message over Serial
+void sendMIDIControlChange(int controller, int value)
+{
+  Serial.write(0xB0);            // Control Change message on channel 1
+  Serial.write(controller + 30); // Controller number (0-7 for channels 0-7)
+  Serial.write(value);           // Value (0-127)
+}
+
+void sendMidiValues()
+{
+  // Default mode: Read and display MIDI values
+  int values[8]; // Array to store the analog values of all channels
+
+  for (int channel = 0; channel < 8; channel++)
+  {
+    selectChannel(channel);           // Select the active channel
+    values[channel] = analogRead(A0); // Read and store the analog value
+
+    // Map the analog value (0–1023) to MIDI range (0–127)
+    int midiValue = map(values[channel], 0, 1023, 0, 127);
+
+    // Update only if the value has changed significantly (by the threshold)
+    if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
+    {
+      lastPrintedValues[channel] = midiValue; // Update the last printed value
+
+      // Send MIDI CC message
+      sendMIDIControlChange(channel, midiValue);
+    }
+  }
+}
+
 void selectChannel(int channel)
 {
   digitalWrite(A, channel & 0x01);
   digitalWrite(B, (channel >> 1) & 0x01);
   digitalWrite(C, (channel >> 2) & 0x01);
-}
-
-void sendMIDIControlChange(int controller, int value)
-{
-  Serial.write(0xB0 | (settingsMidiChannels[controller][0] - 1));
-  Serial.write(settingsMidiChannels[controller][1]);
-  Serial.write(value);
-}
-
-void readAndSendMidiValues()
-{
-  int analogValues[NUM_CHANNELS];
-
-  for (int channel = 0; channel < NUM_CHANNELS; channel++)
-  {
-    selectChannel(channel);
-    analogValues[channel] = analogRead(A0);
-
-    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
-
-    if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
-    {
-      lastPrintedValues[channel] = midiValue;
-      sendMIDIControlChange(channel, midiValue);
-    }
-  }
 }
