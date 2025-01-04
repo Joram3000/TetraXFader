@@ -31,14 +31,14 @@ unsigned long lastDebounceTime = 0;
 
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int settingsMidiCC[NUM_CHANNELS][2] = {
-    {1, 0}, // Channel 1, CC 0
-    {1, 1}, // Channel 1, CC 1
-    {2, 2}, // Channel 2, CC 2
-    {2, 3}, // Channel 2, CC 3
-    {1, 4}, // Channel 1, CC 4
-    {1, 5}, // Channel 1, CC 5
-    {2, 6}, // Channel 2, CC 6
-    {2, 7}  // Channel 2, CC 7
+    {1, 2},  // Channel 1, CC 0
+    {1, 4},  // Channel 1, CC 1
+    {2, 6},  // Channel 2, CC 2
+    {2, 8},  // Channel 2, CC 3
+    {1, 10}, // Channel 1, CC 4
+    {1, 22}, // Channel 1, CC 5
+    {2, 33}, // Channel 2, CC 6
+    {2, 44}  // Channel 2, CC 7
 };
 int oldPosition = 0;
 int debouncedPosition = 0;
@@ -144,9 +144,9 @@ void updateDisplay()
 // Function to send a MIDI Control Change (CC) message over Serial
 void sendMIDIControlChange(int controller, int value)
 {
-  Serial.write(0xB0);            // Control Change message on channel 1
-  Serial.write(controller + 30); // Controller number (0-7 for channels 0-7)
-  Serial.write(value);           // Value (0-127)
+  Serial.write(0xB0 | (settingsMidiCC[controller][0] - 1)); // Control Change message on the specified channel
+  Serial.write(settingsMidiCC[controller][1]);              // Controller number (0-7 for channels 0-7)
+  Serial.write(value);                                      // Value (0-127)
 }
 
 void sendMidiValues()
