@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#line 1 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -47,6 +49,23 @@ unsigned long lastEncoderDebounceTime = 0;
 int selectedChannel = 0;
 int initialEncoderPosition = 0;
 
+#line 50 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void setup();
+#line 66 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void loop();
+#line 74 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void handleButtonPress();
+#line 88 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void handleEncoder();
+#line 109 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void updateDisplay();
+#line 146 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void selectChannel(int channel);
+#line 153 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void sendMIDIControlChange(int channel, int ccNumber, int value);
+#line 160 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+void readAndSendMidiValues();
+#line 50 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void setup()
 {
   pinMode(A, OUTPUT);
