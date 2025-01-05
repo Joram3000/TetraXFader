@@ -4,7 +4,7 @@
 // Constants
 const int NUM_CHANNELS = 8;
 const int MIDI_MAX_VALUE = 127;
-const int PWM_MAX_VALUE = 255;
+const int PWM_MAX_VALUE = 240; // FOR SAFETY
 const int DEBOUNCE_DELAY = 20;
 const int MIDI_BAUD_RATE = 31250;
 const int THRESHOLD = 2;
@@ -55,8 +55,7 @@ void setup()
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(pwmPin, OUTPUT);
 
-  // Increase PWM frequency for Timer 2 (pins 3 and 11 on Arduino Uno)
-  TCCR2B = TCCR2B & B11111000 | B00000001; // Set Timer 2 prescaler to 1 (31.25 kHz PWM frequency)
+  TCCR1B = TCCR1B & B11111000 | B00000001;
 
   lcd.init();
   lcd.backlight();
@@ -91,7 +90,7 @@ void handleButtonPress()
 
 void handleEncoder()
 {
-  int newPosition = myEnc.read() / 3;
+  int newPosition = myEnc.read() / 4;
   if (newPosition != oldPosition)
   {
     lastEncoderDebounceTime = millis();
@@ -166,14 +165,20 @@ void readAndSendMidiValues()
     selectChannel(channel);
     analogValues[channel] = analogRead(A0);
 
-    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
+    if (selectedChannel == channel)
+    {
+      analogWrite(pwmPin, 200); // Turn on the LED for the selected channel
+    }
+    else
+    {
+      analogWrite(pwmPin, LOW); // Turn off the LED for other channels
+    }
 
+    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
     if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
     {
       lastPrintedValues[channel] = midiValue;
       sendMIDIControlChange(settingsMidiCC[channel][0], settingsMidiCC[channel][1], midiValue);
     }
-    int pwmValue = 180; // map(analogValues[channel], 0, 1023, 0, PWM_MAX_VALUE);
-    analogWrite(pwmPin, pwmValue);
   }
 }
