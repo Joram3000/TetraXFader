@@ -25,6 +25,16 @@ byte barLevels[8][8] = {
     {0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
     {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111}};
 
+byte xBarLevels[8][8] = {
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}};
+
 // Pin definitions
 const int A = 2;
 const int B = 3;
@@ -32,6 +42,7 @@ const int C = 4;
 Encoder myEnc(5, 6);
 const int buttonPin = 7;
 const int pwmPin = 10;
+const int xfaderLedPin = 11;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
@@ -60,6 +71,7 @@ void setup()
   pinMode(C, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(pwmPin, OUTPUT);
+  pinMode(xfaderLedPin, OUTPUT);
 
   TCCR1B = TCCR1B & B11111000 | B00000001;
 
@@ -68,8 +80,13 @@ void setup()
   for (int i = 0; i < NUM_CHANNELS; i++)
   {
     lcd.createChar(i, barLevels[i]);
+    lcd.createChar(i + 8, xBarLevels[i]);
   }
-  Serial.begin(MIDI_BAUD_RATE);
+
+  // for (int i = 0; i < NUM_CHANNELS; i++)
+  // {
+  // }
+  // Serial.begin(MIDI_BAUD_RATE);
 }
 
 void loop()
@@ -121,11 +138,13 @@ void updateDisplay()
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
 
+  analogWrite(xfaderLedPin, 1);
   lcd.setCursor(0, 0);
-  lcd.print("CC:");
+  lcd.print("CC");
   lcd.print(settingsMidiCC[selectedChannel][1]);
-  lcd.print("X:");
+  lcd.print("X");
   lcd.print(XFaderValue);
+  lcd.write((byte)XFaderValue);
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
   lcd.print(settingsMidiCC[selectedChannel][0]);
@@ -170,7 +189,7 @@ void readXfader()
 
   if (XfaderReading != oldXfaderValue)
   {
-    XFaderValue = map(XfaderReading, 0, 1023, 0, 127);
+    XFaderValue = map(XfaderReading, 0, 1023, 0, 7);
   }
   oldXfaderValue = XfaderReading;
 }
@@ -186,8 +205,6 @@ void readAndSendMidiValues()
 
     int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
 
-    midiValue += XFaderValue;
-    midiValue = constrain(midiValue, 0, MIDI_MAX_VALUE);
     if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
     {
       lastPrintedValues[channel] = midiValue;
