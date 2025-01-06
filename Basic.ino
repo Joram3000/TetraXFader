@@ -15,7 +15,7 @@ int brightness = 0;
 int fadeAmount = 5; // Adjust for desired fade step
 
 // Bar levels for LCD
-byte barLevels[8][8] = {
+byte barLevels[16][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111},
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111},
@@ -25,15 +25,14 @@ byte barLevels[8][8] = {
     {0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
     {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111}};
 
-byte xBarLevels[8][8] = {
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000},
-    {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000},
-    {0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
-    {0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
-    {0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}};
+//   {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
+//   {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
+//   {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000},
+//   {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000},
+//   {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000},
+//   {0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+//   {0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+//   {0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}};
 
 // Pin definitions
 const int A = 2;
@@ -73,20 +72,14 @@ void setup()
   pinMode(pwmPin, OUTPUT);
   pinMode(xfaderLedPin, OUTPUT);
 
-  TCCR1B = TCCR1B & B11111000 | B00000001;
-
   lcd.init();
   lcd.backlight();
   for (int i = 0; i < NUM_CHANNELS; i++)
   {
     lcd.createChar(i, barLevels[i]);
-    lcd.createChar(i + 8, xBarLevels[i]);
   }
 
-  // for (int i = 0; i < NUM_CHANNELS; i++)
-  // {
-  // }
-  // Serial.begin(MIDI_BAUD_RATE);
+  Serial.begin(MIDI_BAUD_RATE);
 }
 
 void loop()
@@ -138,13 +131,14 @@ void updateDisplay()
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
 
-  analogWrite(xfaderLedPin, 1);
+  analogWrite(xfaderLedPin, XFaderValue);
+  analogWrite(pwmPin, XFaderValue);
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(settingsMidiCC[selectedChannel][1]);
   lcd.print("X");
   lcd.print(XFaderValue);
-  lcd.write((byte)XFaderValue);
+  lcd.write((byte)XFaderValue + 8);
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
   lcd.print(settingsMidiCC[selectedChannel][0]);
