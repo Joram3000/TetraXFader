@@ -9,6 +9,11 @@ const int DEBOUNCE_DELAY = 20;
 const int MIDI_BAUD_RATE = 31250;
 const int THRESHOLD = 2;
 
+unsigned long previousMillis = 0;
+const long interval = 10; // Adjust for desired fade speed
+int brightness = 0;
+int fadeAmount = 5; // Adjust for desired fade step
+
 // Bar levels for LCD
 byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
@@ -30,7 +35,8 @@ const int pwmPin = 10;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
-
+int XFaderValue = 0;
+int oldXfaderValue = 0;
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int settingsMidiCC[NUM_CHANNELS][2] = {
     {1, 2},
@@ -72,6 +78,7 @@ void loop()
   handleEncoder();
   updateDisplay();
   readAndSendMidiValues();
+  readXfader();
 }
 
 void handleButtonPress()
@@ -117,7 +124,8 @@ void updateDisplay()
   lcd.setCursor(0, 0);
   lcd.print("CC:");
   lcd.print(settingsMidiCC[selectedChannel][1]);
-  lcd.print(" ");
+  lcd.print("X:");
+  lcd.print(XFaderValue);
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
   lcd.print(settingsMidiCC[selectedChannel][0]);
@@ -156,6 +164,17 @@ void sendMIDIControlChange(int midiChannel, int ccNumber, int value)
   Serial.write(value);
 }
 
+void readXfader()
+{
+  int XfaderReading = analogRead(A2);
+
+  if (XfaderReading != oldXfaderValue)
+  {
+    XFaderValue = map(XfaderReading, 0, 1023, 0, 127);
+  }
+  oldXfaderValue = XfaderReading;
+}
+
 void readAndSendMidiValues()
 {
   int analogValues[NUM_CHANNELS];
@@ -165,16 +184,10 @@ void readAndSendMidiValues()
     selectChannel(channel);
     analogValues[channel] = analogRead(A0);
 
-    if (selectedChannel == channel)
-    {
-      analogWrite(pwmPin, 200); // Turn on the LED for the selected channel
-    }
-    else
-    {
-      analogWrite(pwmPin, LOW); // Turn off the LED for other channels
-    }
-
     int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
+
+    midiValue += XFaderValue;
+    midiValue = constrain(midiValue, 0, MIDI_MAX_VALUE);
     if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
     {
       lastPrintedValues[channel] = midiValue;
