@@ -114,15 +114,15 @@ void updateDisplay()
 {
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
-
-  analogWrite(xfaderLedPin, XFaderValue);
+  int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);
+  analogWrite(xfaderLedPin, mappedXFaderValue);
 
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(settingsMidiCC[selectedChannel][1]);
   lcd.print("X");
-  lcd.print(XFaderValue);
-  lcd.write((byte)XFaderValue + 8);
+  lcd.write((byte)mappedXFaderValue);
+  lcd.print(mappedXFaderValue);
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
   lcd.print(settingsMidiCC[selectedChannel][0]);
@@ -167,7 +167,7 @@ void readXfader()
 
   if (XfaderReading != oldXfaderValue)
   {
-    XFaderValue = map(XfaderReading, 0, 1023, 0, 10);
+    XFaderValue = XfaderReading;
   }
   oldXfaderValue = XfaderReading;
 }
@@ -182,10 +182,6 @@ void readAndSendMidiValues()
     analogValues[channel] = analogRead(A0);
 
     int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
-
-    // Add XFaderValue to midiValue
-    midiValue += XFaderValue;
-    midiValue = constrain(midiValue, 0, MIDI_MAX_VALUE);
 
     if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
     {
