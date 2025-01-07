@@ -1,5 +1,5 @@
 {
-  "port": "/dev/cu.JBLCharge4",
+  "port": "/dev/cu.usbserial-120",
   "configuration": "",
   "output": "build",
   "board": "arduino:avr:uno",

@@ -95,7 +95,7 @@ void setup()
 void loop()
 {
   int analogValues[NUM_CHANNELS];                                                  // Array to store analog values
-  int XfaderReading = analogRead(A2);                                              // Read crossfader value
+  int XfaderReading = 500;                                                         // analogRead(A2);                                              // Read crossfader value
   float morphFactor = 1.0 - XFaderValue / 1023.0;                                  // Calculate morph factor
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1}; // Last displayed values
   static int lastSelectedChannel = -1;                                             // Last selected channel
