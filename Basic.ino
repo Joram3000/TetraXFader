@@ -43,8 +43,9 @@ int settingsMidiCC[NUM_CHANNELS][2] = {
 int oldEncPosition = 0;
 int debouncedEncPosition = 0;
 unsigned long lastEncoderDebounceTime = 0;
-int selectedChannel = 0;
 int initialEncoderPosition = 0;
+
+int selectedChannel = 0;
 
 void setup()
 {
