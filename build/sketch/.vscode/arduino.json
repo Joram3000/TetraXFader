@@ -1,6 +1,6 @@
 #line 1 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/.vscode/arduino.json"
 {
-  "port": "/dev/cu.usbserial-1320",
+  "port": "/dev/cu.usbserial-120",
   "configuration": "",
   "output": "build",
   "board": "arduino:avr:uno",

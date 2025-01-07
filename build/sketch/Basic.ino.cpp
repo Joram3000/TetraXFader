@@ -3,44 +3,39 @@
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
-// Constants
+const int NUM_PAIRS = 4;
 const int NUM_CHANNELS = 8;
 const int MIDI_MAX_VALUE = 127;
-const int PWM_MAX_VALUE = 240; // FOR SAFETY
+const int PWM_MAX_VALUE = 255;
 const int DEBOUNCE_DELAY = 20;
 const int MIDI_BAUD_RATE = 31250;
 const int THRESHOLD = 2;
 
-unsigned long previousMillis = 0;
-const long interval = 10; // Adjust for desired fade speed
-int brightness = 0;
-int fadeAmount = 5; // Adjust for desired fade step
-
-// Bar levels for LCD
 byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111}};
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}};
 
-// Pin definitions
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 const int A = 2;
 const int B = 3;
 const int C = 4;
 Encoder myEnc(5, 6);
 const int buttonPin = 7;
 const int pwmPin = 10;
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+const int xfaderLedPin = 11;
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
 int XFaderValue = 0;
 int oldXfaderValue = 0;
+int lastPrintedPairValues[NUM_PAIRS] = {-1, -1, -1, -1};
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
-int settingsMidiCC[NUM_CHANNELS][2] = {
+int midiSettings[NUM_CHANNELS][2] = {
     {1, 2},
     {1, 4},
     {2, 6},
@@ -49,33 +44,30 @@ int settingsMidiCC[NUM_CHANNELS][2] = {
     {1, 22},
     {2, 33},
     {2, 44}};
-int oldPosition = 0;
-int debouncedPosition = 0;
+int oldEncPosition = 0;
+int debouncedEncPosition = 0;
 unsigned long lastEncoderDebounceTime = 0;
-int selectedChannel = 0;
 int initialEncoderPosition = 0;
 
-#line 56 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+int selectedChannel = 0;
+
+#line 52 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void setup();
-#line 75 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 71 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void loop();
-#line 85 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 79 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void handleButtonPress();
-#line 99 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 93 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void handleEncoder();
-#line 120 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 114 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void updateDisplay();
-#line 154 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 151 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void selectChannel(int channel);
-#line 161 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 158 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void sendMIDIControlChange(int midiChannel, int ccNumber, int value);
-#line 168 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
-void readXfader();
-#line 179 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 166 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void readAndSendMidiValues();
-#line 200 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
-void fadeLEDs();
-#line 56 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 52 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void setup()
 {
   pinMode(A, OUTPUT);
@@ -83,8 +75,7 @@ void setup()
   pinMode(C, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(pwmPin, OUTPUT);
-
-  TCCR1B = TCCR1B & B11111000 | B00000001;
+  pinMode(xfaderLedPin, OUTPUT);
 
   lcd.init();
   lcd.backlight();
@@ -92,6 +83,7 @@ void setup()
   {
     lcd.createChar(i, barLevels[i]);
   }
+
   Serial.begin(MIDI_BAUD_RATE);
 }
 
@@ -101,8 +93,6 @@ void loop()
   handleEncoder();
   updateDisplay();
   readAndSendMidiValues();
-  readXfader();
-  fadeLEDs();
 }
 
 void handleButtonPress()
@@ -112,7 +102,7 @@ void handleButtonPress()
   {
     if (currentButtonState == LOW && lastButtonState == HIGH)
     {
-      selectedChannel = (selectedChannel + 1) % NUM_CHANNELS;
+      selectedChannel = (selectedChannel + 1) % NUM_PAIRS;
       lcd.clear();
     }
   }
@@ -122,20 +112,20 @@ void handleButtonPress()
 void handleEncoder()
 {
   int newPosition = myEnc.read() / 4;
-  if (newPosition != oldPosition)
+  if (newPosition != oldEncPosition)
   {
     lastEncoderDebounceTime = millis();
-    oldPosition = newPosition;
+    oldEncPosition = newPosition;
   }
 
   if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
   {
-    if (debouncedPosition != oldPosition)
+    if (debouncedEncPosition != oldEncPosition)
     {
-      debouncedPosition = oldPosition;
-      int relativeChange = debouncedPosition - initialEncoderPosition;
-      settingsMidiCC[selectedChannel][1] = constrain(settingsMidiCC[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
-      initialEncoderPosition = debouncedPosition;
+      debouncedEncPosition = oldEncPosition;
+      int relativeChange = debouncedEncPosition - initialEncoderPosition;
+      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+      initialEncoderPosition = debouncedEncPosition;
     }
   }
 }
@@ -144,15 +134,18 @@ void updateDisplay()
 {
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
+  int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);
+  analogWrite(pwmPin, mappedXFaderValue);
+  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue)); // Inverted
 
   lcd.setCursor(0, 0);
-  lcd.print("CC:");
-  lcd.print(settingsMidiCC[selectedChannel][1]);
-  lcd.print("X:");
-  lcd.print(XFaderValue);
+  lcd.print("CC");
+  lcd.print(midiSettings[selectedChannel][1]);
+  lcd.print("X");
+  lcd.write((byte)mappedXFaderValue);
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
-  lcd.print(settingsMidiCC[selectedChannel][0]);
+  lcd.print(midiSettings[selectedChannel][0]);
 
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
@@ -186,55 +179,40 @@ void sendMIDIControlChange(int midiChannel, int ccNumber, int value)
   Serial.write(0xB0 | (midiChannel - 1));
   Serial.write(ccNumber);
   Serial.write(value);
-}
-
-void readXfader()
-{
-  int XfaderReading = analogRead(A2);
-
-  if (XfaderReading != oldXfaderValue)
-  {
-    XFaderValue = map(XfaderReading, 0, 1023, 0, 30);
-  }
-  oldXfaderValue = XfaderReading;
+  Serial.flush();
 }
 
 void readAndSendMidiValues()
 {
   int analogValues[NUM_CHANNELS];
+  int XfaderReading = analogRead(A2);
+
+  if (XfaderReading != oldXfaderValue)
+  {
+    XFaderValue = XfaderReading;
+  }
 
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
     selectChannel(channel);
     analogValues[channel] = analogRead(A0);
-
     int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
-    // Add XFaderValue to midiValue
-    midiValue += XFaderValue;
-    midiValue = constrain(midiValue, 0, MIDI_MAX_VALUE);
-    if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
-    {
-      lastPrintedValues[channel] = midiValue;
-      sendMIDIControlChange(settingsMidiCC[channel][0], settingsMidiCC[channel][1], midiValue);
-    }
+    lastPrintedValues[channel] = midiValue;
   }
-}
 
-void fadeLEDs()
-{
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval)
+  for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
   {
-    previousMillis = currentMillis;
+    float morphFactor = 1.0 - XFaderValue / 1023.0; // Inverted
+    int morphedValue = analogValues[pair] * (1 - morphFactor) + analogValues[pair + 1] * morphFactor;
+    int midiValue = map(morphedValue, 0, 1023, 0, MIDI_MAX_VALUE);
 
-    analogWrite(pwmPin, brightness);
-
-    brightness = brightness + fadeAmount;
-
-    if (brightness <= 0 || brightness >= 255)
+    if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD)
     {
-      fadeAmount = -fadeAmount;
+      lastPrintedPairValues[pair] = midiValue;
+
+      sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue);
     }
   }
+  oldXfaderValue = XfaderReading;
 }
+
