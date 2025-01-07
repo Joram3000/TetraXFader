@@ -41,12 +41,12 @@ int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int midiSettings[NUM_CHANNELS][2] = {
     {1, 2},
     {1, 4},
-    {2, 6},
-    {2, 8},
-    {1, 10},
-    {1, 22},
-    {2, 33},
-    {2, 44}};
+    {3, 6},
+    {4, 48},
+    {5, 55},
+    {6, 66},
+    {7, 77},
+    {8, 44}};
 
 // Variables for encoder position
 int oldEncPosition = 0;
@@ -123,9 +123,8 @@ void loop()
 
     if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD) // Check if value changed significantly
     {
-      lastPrintedPairValues[pair] = midiValue; // Update last printed pair value
-
       sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue); // Send MIDI control change
+      lastPrintedPairValues[pair] = midiValue;                                        // Update last printed pair value
     }
   }
 
