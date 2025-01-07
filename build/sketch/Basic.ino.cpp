@@ -10,7 +10,7 @@ const int MIDI_MAX_VALUE = 127;   // Maximum MIDI value
 const int PWM_MAX_VALUE = 255;    // Maximum PWM value
 const int DEBOUNCE_DELAY = 20;    // Debounce delay for button and encoder
 const int MIDI_BAUD_RATE = 31250; // MIDI baud rate
-const int THRESHOLD = 2;          // Threshold for MIDI value change
+const int THRESHOLD = 7;          // Threshold for MIDI value change
 const int A = 2;                  // Multiplexer control pin A
 const int B = 3;                  // Multiplexer control pin B
 const int C = 4;                  // Multiplexer control pin C
@@ -43,12 +43,12 @@ int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int midiSettings[NUM_CHANNELS][2] = {
     {1, 2},
     {1, 4},
-    {2, 6},
-    {2, 8},
-    {1, 10},
-    {1, 22},
-    {2, 33},
-    {2, 44}};
+    {3, 6},
+    {4, 48},
+    {5, 55},
+    {6, 66},
+    {7, 77},
+    {8, 44}};
 
 // Variables for encoder position
 int oldEncPosition = 0;
@@ -63,13 +63,13 @@ int selectedChannel = 0;
 void setup();
 #line 80 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void loop();
-#line 149 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 148 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void handleButtonPress();
-#line 163 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 162 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void handleEncoder();
-#line 185 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 184 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void selectChannel(int channel);
-#line 192 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
+#line 191 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void sendMIDIControlChange(int midiChannel, int ccNumber, int value);
 #line 60 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/Basic.ino"
 void setup()
@@ -138,9 +138,8 @@ void loop()
 
     if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD) // Check if value changed significantly
     {
-      lastPrintedPairValues[pair] = midiValue; // Update last printed pair value
-
       sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue); // Send MIDI control change
+      lastPrintedPairValues[pair] = midiValue;                                        // Update last printed pair value
     }
   }
 
