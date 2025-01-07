@@ -73,7 +73,6 @@ void loop()
   handleButtonPress();
   handleEncoder();
   updateDisplay();
-  readXfader();
   readAndSendMidiValues();
 }
 
@@ -84,7 +83,7 @@ void handleButtonPress()
   {
     if (currentButtonState == LOW && lastButtonState == HIGH)
     {
-      selectedChannel = (selectedChannel + 1) % NUM_CHANNELS;
+      selectedChannel = (selectedChannel + 1) % NUM_PAIRS;
       lcd.clear();
     }
   }
@@ -119,6 +118,7 @@ void updateDisplay()
   int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);
   analogWrite(pwmPin, mappedXFaderValue);
   analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue)); // Inverted
+
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(midiSettings[selectedChannel][1]);
@@ -163,24 +163,22 @@ void sendMIDIControlChange(int midiChannel, int ccNumber, int value)
   Serial.flush();
 }
 
-void readXfader()
+void readAndSendMidiValues()
 {
+  int analogValues[NUM_CHANNELS];
   int XfaderReading = analogRead(A2);
+
   if (XfaderReading != oldXfaderValue)
   {
     XFaderValue = XfaderReading;
   }
-  oldXfaderValue = XfaderReading;
-}
-
-void readAndSendMidiValues()
-{
-  int analogValues[NUM_CHANNELS];
 
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
     selectChannel(channel);
     analogValues[channel] = analogRead(A0);
+    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
+    lastPrintedValues[channel] = midiValue;
   }
 
   for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
@@ -192,7 +190,9 @@ void readAndSendMidiValues()
     if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD)
     {
       lastPrintedPairValues[pair] = midiValue;
+
       sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue);
     }
   }
+  oldXfaderValue = XfaderReading;
 }
