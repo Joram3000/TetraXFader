@@ -1,6 +1,7 @@
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
+const int NUM_PAIRS = 4;
 const int NUM_CHANNELS = 8;
 const int MIDI_MAX_VALUE = 127;
 const int PWM_MAX_VALUE = 255;
@@ -10,13 +11,13 @@ const int THRESHOLD = 2;
 
 byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
-    {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111}};
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
+    {0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}};
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 const int A = 2;
@@ -30,8 +31,9 @@ bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
 int XFaderValue = 0;
 int oldXfaderValue = 0;
+int lastPrintedPairValues[NUM_PAIRS] = {-1, -1, -1, -1};
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
-int settingsMidiCC[NUM_CHANNELS][2] = {
+int midiSettings[NUM_CHANNELS][2] = {
     {1, 2},
     {1, 4},
     {2, 6},
@@ -71,8 +73,8 @@ void loop()
   handleButtonPress();
   handleEncoder();
   updateDisplay();
-  readAndSendMidiValues();
   readXfader();
+  readAndSendMidiValues();
 }
 
 void handleButtonPress()
@@ -104,7 +106,7 @@ void handleEncoder()
     {
       debouncedEncPosition = oldEncPosition;
       int relativeChange = debouncedEncPosition - initialEncoderPosition;
-      settingsMidiCC[selectedChannel][1] = constrain(settingsMidiCC[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
       initialEncoderPosition = debouncedEncPosition;
     }
   }
@@ -119,13 +121,12 @@ void updateDisplay()
 
   lcd.setCursor(0, 0);
   lcd.print("CC");
-  lcd.print(settingsMidiCC[selectedChannel][1]);
+  lcd.print(midiSettings[selectedChannel][1]);
   lcd.print("X");
   lcd.write((byte)mappedXFaderValue);
-  lcd.print(mappedXFaderValue);
   lcd.setCursor(0, 1);
   lcd.print("MIDI:");
-  lcd.print(settingsMidiCC[selectedChannel][0]);
+  lcd.print(midiSettings[selectedChannel][0]);
 
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
@@ -180,13 +181,18 @@ void readAndSendMidiValues()
   {
     selectChannel(channel);
     analogValues[channel] = analogRead(A0);
+  }
 
-    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
+  for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
+  {
+    float morphFactor = 1.0 - XFaderValue / 1023.0; // Assuming XFaderValue ranges from 0 to 1023
+    int morphedValue = analogValues[pair] * (1 - morphFactor) + analogValues[pair + 1] * morphFactor;
+    int midiValue = map(morphedValue, 0, 1023, 0, MIDI_MAX_VALUE);
 
-    if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
+    if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD)
     {
-      lastPrintedValues[channel] = midiValue;
-      sendMIDIControlChange(settingsMidiCC[channel][0], settingsMidiCC[channel][1], midiValue);
+      lastPrintedPairValues[pair] = midiValue;
+      sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue);
     }
   }
 }
