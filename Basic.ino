@@ -1,21 +1,14 @@
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
-// Constants
 const int NUM_CHANNELS = 8;
 const int MIDI_MAX_VALUE = 127;
-const int PWM_MAX_VALUE = 240; // FOR SAFETY
+const int PWM_MAX_VALUE = 255;
 const int DEBOUNCE_DELAY = 20;
 const int MIDI_BAUD_RATE = 31250;
 const int THRESHOLD = 2;
 
-unsigned long previousMillis = 0;
-const long interval = 10; // Adjust for desired fade speed
-int brightness = 0;
-int fadeAmount = 5; // Adjust for desired fade step
-
-// Bar levels for LCD
-byte barLevels[16][8] = {
+byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111},
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b11111, 0b11111},
@@ -25,16 +18,7 @@ byte barLevels[16][8] = {
     {0b00000, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111},
     {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111}};
 
-//   {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
-//   {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
-//   {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000},
-//   {0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000},
-//   {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000},
-//   {0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
-//   {0b00000, 0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000},
-//   {0b11111, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}};
-
-// Pin definitions
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 const int A = 2;
 const int B = 3;
 const int C = 4;
@@ -42,7 +26,6 @@ Encoder myEnc(5, 6);
 const int buttonPin = 7;
 const int pwmPin = 10;
 const int xfaderLedPin = 11;
-LiquidCrystal_I2C lcd(0x27, 16, 2);
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
 int XFaderValue = 0;
@@ -57,8 +40,8 @@ int settingsMidiCC[NUM_CHANNELS][2] = {
     {1, 22},
     {2, 33},
     {2, 44}};
-int oldPosition = 0;
-int debouncedPosition = 0;
+int oldEncPosition = 0;
+int debouncedEncPosition = 0;
 unsigned long lastEncoderDebounceTime = 0;
 int selectedChannel = 0;
 int initialEncoderPosition = 0;
@@ -108,20 +91,20 @@ void handleButtonPress()
 void handleEncoder()
 {
   int newPosition = myEnc.read() / 4;
-  if (newPosition != oldPosition)
+  if (newPosition != oldEncPosition)
   {
     lastEncoderDebounceTime = millis();
-    oldPosition = newPosition;
+    oldEncPosition = newPosition;
   }
 
   if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
   {
-    if (debouncedPosition != oldPosition)
+    if (debouncedEncPosition != oldEncPosition)
     {
-      debouncedPosition = oldPosition;
-      int relativeChange = debouncedPosition - initialEncoderPosition;
+      debouncedEncPosition = oldEncPosition;
+      int relativeChange = debouncedEncPosition - initialEncoderPosition;
       settingsMidiCC[selectedChannel][1] = constrain(settingsMidiCC[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
-      initialEncoderPosition = debouncedPosition;
+      initialEncoderPosition = debouncedEncPosition;
     }
   }
 }
@@ -132,7 +115,7 @@ void updateDisplay()
   static int lastSelectedChannel = -1;
 
   analogWrite(xfaderLedPin, XFaderValue);
-  analogWrite(pwmPin, XFaderValue);
+
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(settingsMidiCC[selectedChannel][1]);
@@ -183,7 +166,7 @@ void readXfader()
 
   if (XfaderReading != oldXfaderValue)
   {
-    XFaderValue = map(XfaderReading, 0, 1023, 0, 7);
+    XFaderValue = map(XfaderReading, 0, 1023, 0, 10);
   }
   oldXfaderValue = XfaderReading;
 }
@@ -198,6 +181,10 @@ void readAndSendMidiValues()
     analogValues[channel] = analogRead(A0);
 
     int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
+
+    // Add XFaderValue to midiValue
+    midiValue += XFaderValue;
+    midiValue = constrain(midiValue, 0, MIDI_MAX_VALUE);
 
     if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
     {
