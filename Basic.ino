@@ -117,8 +117,8 @@ void updateDisplay()
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
   static int lastSelectedChannel = -1;
   int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);
-  analogWrite(xfaderLedPin, mappedXFaderValue);
-
+  analogWrite(pwmPin, mappedXFaderValue);
+  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue)); // Inverted
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(midiSettings[selectedChannel][1]);
@@ -160,12 +160,12 @@ void sendMIDIControlChange(int midiChannel, int ccNumber, int value)
   Serial.write(0xB0 | (midiChannel - 1));
   Serial.write(ccNumber);
   Serial.write(value);
+  Serial.flush();
 }
 
 void readXfader()
 {
   int XfaderReading = analogRead(A2);
-
   if (XfaderReading != oldXfaderValue)
   {
     XFaderValue = XfaderReading;
@@ -185,7 +185,7 @@ void readAndSendMidiValues()
 
   for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
   {
-    float morphFactor = 1.0 - XFaderValue / 1023.0; // Assuming XFaderValue ranges from 0 to 1023
+    float morphFactor = 1.0 - XFaderValue / 1023.0; // Inverted
     int morphedValue = analogValues[pair] * (1 - morphFactor) + analogValues[pair + 1] * morphFactor;
     int midiValue = map(morphedValue, 0, 1023, 0, MIDI_MAX_VALUE);
 
