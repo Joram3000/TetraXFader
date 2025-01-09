@@ -1,5 +1,5 @@
 {
-  "port": "/dev/cu.usbserial-120",
+  "port": "/dev/cu.usbserial-1130",
   "configuration": "",
   "output": "build",
   "board": "arduino:avr:uno",

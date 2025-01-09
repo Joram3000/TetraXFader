@@ -1,21 +1,18 @@
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
-// Constants
-const int NUM_PAIRS = 4;          // Number of pairs of channels
-const int NUM_CHANNELS = 8;       // Total number of channels
-const int MIDI_MAX_VALUE = 127;   // Maximum MIDI value
-const int PWM_MAX_VALUE = 255;    // Maximum PWM value
-const int DEBOUNCE_DELAY = 20;    // Debounce delay for button and encoder
-const int MIDI_BAUD_RATE = 31250; // MIDI baud rate
-const int THRESHOLD = 2;          // Threshold for MIDI value change
-const int A = 2;                  // Multiplexer control pin A
-const int B = 3;                  // Multiplexer control pin B
-const int C = 4;                  // Multiplexer control pin C
-const int buttonPin = 7;          // Button pin
-const int pwmPin = 10;            // PWM output pin
-const int xfaderLedPin = 11;      // Crossfader LED pin
-
+const int NUM_CHANNELS = 8;
+const int MIDI_MAX_VALUE = 127;
+const int PWM_MAX_VALUE = 255;
+const int DEBOUNCE_DELAY = 10;
+const int MIDI_BAUD_RATE = 31250;
+const int THRESHOLD = 2;
+const int A = 2;
+const int B = 3;
+const int C = 4;
+const int buttonPin = 7;
+const int pwmPin = 10;
+const int xfaderLedPin = 11;
 byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111, 0b00000},
@@ -29,33 +26,27 @@ byte barLevels[8][8] = {
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Encoder myEnc(5, 6);
 
+int selectedChannel = 0;
 bool lastButtonState = false;
 unsigned long lastDebounceTime = 0;
-
 int XFaderValue = 0;
 int oldXfaderValue = 0;
-
-int lastPrintedPairValues[NUM_PAIRS] = {-1, -1, -1, -1};
 int lastPrintedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
-
 int midiSettings[NUM_CHANNELS][2] = {
     {1, 2},
-    {1, 4},
+    {2, 4},
     {3, 6},
     {4, 48},
     {5, 55},
     {6, 66},
     {7, 77},
-    {8, 44}};
+    {8, 88},
+};
 
-// Variables for encoder position
 int oldEncPosition = 0;
 int debouncedEncPosition = 0;
 unsigned long lastEncoderDebounceTime = 0;
 int initialEncoderPosition = 0;
-
-// Selected channel
-int selectedChannel = 0;
 
 void setup()
 {
@@ -79,27 +70,31 @@ void setup()
 
 void loop()
 {
-  int analogValues[NUM_CHANNELS];                                                  // Array to store analog values
-  int XfaderReading = 500;                                                         // analogRead(A2);                                              // Read crossfader value
-  float morphFactor = 1.0 - XFaderValue / 1023.0;                                  // Calculate morph factor
-  static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1}; // Last displayed values
-  static int lastSelectedChannel = -1;                                             // Last selected channel
-  int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);                         // Map crossfader value to 0-7
-  analogWrite(pwmPin, mappedXFaderValue);                                          // Write PWM value
-  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue));                        // Write inverted LED value
+  int analogValues[NUM_CHANNELS];
+  int XfaderReading = analogRead(A2);
+  float morphFactor = XFaderValue / 1023.0;
+  static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  static int lastSelectedChannel = -1;
+  int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);
 
-  if (XfaderReading != oldXfaderValue) // Check if crossfader value changed
+  if (XfaderReading != oldXfaderValue)
   {
-    XFaderValue = XfaderReading; // Update crossfader value
+    XFaderValue = XfaderReading;
   }
 
-  // Read analog values for each channel
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
-    selectChannel(channel);                                                 // Select channel
-    analogValues[channel] = analogRead(A0);                                 // Read analog value
-    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE); // Map to MIDI value
-    lastPrintedValues[channel] = midiValue;                                 // Update last printed value
+    selectChannel(channel);
+    analogValues[channel] = analogRead(A0);
+    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
+
+    if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
+    {
+      sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue); // Send MIDI control change
+      lastPrintedValues[channel] = midiValue;
+    }
+
+    lastPrintedValues[channel] = midiValue; // Update last printed value
 
     int barLevel = map(lastPrintedValues[channel], 0, MIDI_MAX_VALUE, 0, 7);
     if (lastDisplayedValues[channel] != barLevel || lastSelectedChannel != selectedChannel)
@@ -115,20 +110,6 @@ void loop()
     }
   }
 
-  // Calculate and send MIDI values for pairs of channels
-  for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
-  {
-    int morphedValue = analogValues[pair] * (1 - morphFactor) + analogValues[pair + 1] * morphFactor; // Calculate morphed value
-    int midiValue = map(morphedValue, 0, 1023, 0, MIDI_MAX_VALUE);                                    // Map to MIDI value
-
-    if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD) // Check if value changed significantly
-    {
-      sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue); // Send MIDI control change
-      lastPrintedPairValues[pair] = midiValue;                                        // Update last printed pair value
-    }
-  }
-
-  // Update LCD display
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(midiSettings[selectedChannel][1]);
@@ -141,6 +122,9 @@ void loop()
   oldXfaderValue = XfaderReading;        // Update old crossfader value
   lastSelectedChannel = selectedChannel; // Update last selected channel
 
+  analogWrite(pwmPin, mappedXFaderValue);                   // Write PWM value
+  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue)); // Write inverted LED value
+
   handleButtonPress();
   handleEncoder();
 }
@@ -152,8 +136,8 @@ void handleButtonPress()
   {
     if (currentButtonState == LOW && lastButtonState == HIGH) // Button press detected
     {
-      selectedChannel = (selectedChannel + 1) % NUM_PAIRS; // Cycle through channels
-      lcd.clear();                                         // Clear LCD display
+      selectedChannel = (selectedChannel + 1) % 4; // Cycle through channels
+      lcd.clear();                                 // Clear LCD display
     }
   }
   lastButtonState = currentButtonState; // Update last button state
@@ -161,16 +145,16 @@ void handleButtonPress()
 
 void handleEncoder()
 {
-  int newPosition = myEnc.read() / 4; // Read encoder position
-  if (newPosition != oldEncPosition)  // Check if position changed
+  int newPosition = myEnc.read() / 4;
+  if (newPosition != oldEncPosition)
   {
-    lastEncoderDebounceTime = millis(); // Update debounce time
-    oldEncPosition = newPosition;       // Update old position
+    lastEncoderDebounceTime = millis();
+    oldEncPosition = newPosition;
   }
 
-  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY) // Check debounce delay
+  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
   {
-    if (debouncedEncPosition != oldEncPosition) // Check if debounced position changed
+    if (debouncedEncPosition != oldEncPosition)
     {
       debouncedEncPosition = oldEncPosition;                                                                              // Update debounced position
       int relativeChange = debouncedEncPosition - initialEncoderPosition;                                                 // Calculate relative change
@@ -180,7 +164,6 @@ void handleEncoder()
   }
 }
 
-// Select multiplexer channel
 void selectChannel(int channel)
 {
   digitalWrite(A, channel & 0x01);

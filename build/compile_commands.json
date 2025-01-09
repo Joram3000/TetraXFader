@@ -102,36 +102,6 @@
  {
   "directory": "/",
   "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
-   "-c",
-   "-g",
-   "-Os",
-   "-w",
-   "-std=gnu11",
-   "-ffunction-sections",
-   "-fdata-sections",
-   "-MMD",
-   "-flto",
-   "-fno-fat-lto-objects",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "-I/Users/joram/Documents/Arduino/libraries/Encoder",
-   "-I/Users/joram/Documents/Arduino/libraries/LiquidCrystal_I2C",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src/utility/twi.c",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/libraries/Wire/utility/twi.c.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src/utility/twi.c"
- },
- {
-  "directory": "/",
-  "arguments": [
    "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
    "-c",
    "-g",
@@ -165,20 +135,17 @@
  {
   "directory": "/",
   "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
    "-c",
    "-g",
    "-Os",
    "-w",
-   "-std=gnu++11",
-   "-fpermissive",
-   "-fno-exceptions",
+   "-std=gnu11",
    "-ffunction-sections",
    "-fdata-sections",
-   "-fno-threadsafe-statics",
-   "-Wno-error=narrowing",
    "-MMD",
    "-flto",
+   "-fno-fat-lto-objects",
    "-mmcu=atmega328p",
    "-DF_CPU=16000000L",
    "-DARDUINO=10607",
@@ -186,11 +153,14 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Tone.cpp",
+   "-I/Users/joram/Documents/Arduino/libraries/Encoder",
+   "-I/Users/joram/Documents/Arduino/libraries/LiquidCrystal_I2C",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src/utility/twi.c",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/Tone.cpp.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/libraries/Wire/utility/twi.c.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Tone.cpp"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src/utility/twi.c"
  },
  {
   "directory": "/",
@@ -246,101 +216,11 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/USBCore.cpp",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Tone.cpp",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/USBCore.cpp.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/Tone.cpp.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/USBCore.cpp"
- },
- {
-  "directory": "/",
-  "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
-   "-c",
-   "-g",
-   "-Os",
-   "-w",
-   "-std=gnu++11",
-   "-fpermissive",
-   "-fno-exceptions",
-   "-ffunction-sections",
-   "-fdata-sections",
-   "-fno-threadsafe-statics",
-   "-Wno-error=narrowing",
-   "-MMD",
-   "-flto",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/IPAddress.cpp",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/IPAddress.cpp.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/IPAddress.cpp"
- },
- {
-  "directory": "/",
-  "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
-   "-c",
-   "-g",
-   "-Os",
-   "-w",
-   "-std=gnu++11",
-   "-fpermissive",
-   "-fno-exceptions",
-   "-ffunction-sections",
-   "-fdata-sections",
-   "-fno-threadsafe-statics",
-   "-Wno-error=narrowing",
-   "-MMD",
-   "-flto",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/PluggableUSB.cpp",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/PluggableUSB.cpp.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/PluggableUSB.cpp"
- },
- {
-  "directory": "/",
-  "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
-   "-c",
-   "-g",
-   "-Os",
-   "-w",
-   "-std=gnu++11",
-   "-fpermissive",
-   "-fno-exceptions",
-   "-ffunction-sections",
-   "-fdata-sections",
-   "-fno-threadsafe-statics",
-   "-Wno-error=narrowing",
-   "-MMD",
-   "-flto",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial3.cpp",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/HardwareSerial3.cpp.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial3.cpp"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Tone.cpp"
  },
  {
   "directory": "/",
@@ -396,41 +276,11 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WMath.cpp",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/USBCore.cpp",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/WMath.cpp.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/USBCore.cpp.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WMath.cpp"
- },
- {
-  "directory": "/",
-  "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
-   "-c",
-   "-g",
-   "-Os",
-   "-w",
-   "-std=gnu++11",
-   "-fpermissive",
-   "-fno-exceptions",
-   "-ffunction-sections",
-   "-fdata-sections",
-   "-fno-threadsafe-statics",
-   "-Wno-error=narrowing",
-   "-MMD",
-   "-flto",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Print.cpp",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/Print.cpp.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Print.cpp"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/USBCore.cpp"
  },
  {
   "directory": "/",
@@ -495,6 +345,36 @@
  {
   "directory": "/",
   "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial.cpp",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/HardwareSerial.cpp.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial.cpp"
+ },
+ {
+  "directory": "/",
+  "arguments": [
    "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
    "-c",
    "-g",
@@ -518,6 +398,66 @@
    "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/WInterrupts.c.o"
   ],
   "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WInterrupts.c"
+ },
+ {
+  "directory": "/",
+  "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/PluggableUSB.cpp",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/PluggableUSB.cpp.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/PluggableUSB.cpp"
+ },
+ {
+  "directory": "/",
+  "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Stream.cpp",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/Stream.cpp.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Stream.cpp"
  },
  {
   "directory": "/",
@@ -600,11 +540,11 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WString.cpp",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WMath.cpp",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/WString.cpp.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/WMath.cpp.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WString.cpp"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WMath.cpp"
  },
  {
   "directory": "/",
@@ -630,11 +570,38 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Stream.cpp",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WString.cpp",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/Stream.cpp.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/WString.cpp.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Stream.cpp"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/WString.cpp"
+ },
+ {
+  "directory": "/",
+  "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu11",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-MMD",
+   "-flto",
+   "-fno-fat-lto-objects",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring.c",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring.c.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring.c"
  },
  {
   "directory": "/",
@@ -662,59 +629,6 @@
    "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_analog.c.o"
   ],
   "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_analog.c"
- },
- {
-  "directory": "/",
-  "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
-   "-c",
-   "-g",
-   "-x",
-   "assembler-with-cpp",
-   "-flto",
-   "-MMD",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_pulse.S",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_pulse.S.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_pulse.S"
- },
- {
-  "directory": "/",
-  "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
-   "-c",
-   "-g",
-   "-Os",
-   "-w",
-   "-std=gnu++11",
-   "-fpermissive",
-   "-fno-exceptions",
-   "-ffunction-sections",
-   "-fdata-sections",
-   "-fno-threadsafe-statics",
-   "-Wno-error=narrowing",
-   "-MMD",
-   "-flto",
-   "-mmcu=atmega328p",
-   "-DF_CPU=16000000L",
-   "-DARDUINO=10607",
-   "-DARDUINO_AVR_UNO",
-   "-DARDUINO_ARCH_AVR",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
-   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial.cpp",
-   "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/HardwareSerial.cpp.o"
-  ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial.cpp"
  },
  {
   "directory": "/",
@@ -797,11 +711,11 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring.c",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_digital.c",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring.c.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_digital.c.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring.c"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_digital.c"
  },
  {
   "directory": "/",
@@ -824,11 +738,64 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_digital.c",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_shift.c",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_digital.c.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_shift.c.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_digital.c"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_shift.c"
+ },
+ {
+  "directory": "/",
+  "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
+   "-c",
+   "-g",
+   "-x",
+   "assembler-with-cpp",
+   "-flto",
+   "-MMD",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_pulse.S",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_pulse.S.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_pulse.S"
+ },
+ {
+  "directory": "/",
+  "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial3.cpp",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/HardwareSerial3.cpp.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial3.cpp"
  },
  {
   "directory": "/",
@@ -860,17 +827,20 @@
  {
   "directory": "/",
   "arguments": [
-   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-gcc",
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
    "-c",
    "-g",
    "-Os",
    "-w",
-   "-std=gnu11",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
    "-ffunction-sections",
    "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
    "-MMD",
    "-flto",
-   "-fno-fat-lto-objects",
    "-mmcu=atmega328p",
    "-DF_CPU=16000000L",
    "-DARDUINO=10607",
@@ -878,10 +848,40 @@
    "-DARDUINO_ARCH_AVR",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
-   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_shift.c",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/IPAddress.cpp",
    "-o",
-   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/wiring_shift.c.o"
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/IPAddress.cpp.o"
   ],
-  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/wiring_shift.c"
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/IPAddress.cpp"
+ },
+ {
+  "directory": "/",
+  "arguments": [
+   "/Users/joram/Library/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++",
+   "-c",
+   "-g",
+   "-Os",
+   "-w",
+   "-std=gnu++11",
+   "-fpermissive",
+   "-fno-exceptions",
+   "-ffunction-sections",
+   "-fdata-sections",
+   "-fno-threadsafe-statics",
+   "-Wno-error=narrowing",
+   "-MMD",
+   "-flto",
+   "-mmcu=atmega328p",
+   "-DF_CPU=16000000L",
+   "-DARDUINO=10607",
+   "-DARDUINO_AVR_UNO",
+   "-DARDUINO_ARCH_AVR",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
+   "-I/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
+   "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Print.cpp",
+   "-o",
+   "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/build/core/Print.cpp.o"
+  ],
+  "file": "/Users/joram/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/Print.cpp"
  }
 ]
