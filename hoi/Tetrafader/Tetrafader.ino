@@ -14,6 +14,7 @@ const int C = 4;
 const int buttonPin = 7;
 const int pwmPin = 10;
 const int xfaderLedPin = 11;
+const int XFADER_DEADZONE = 3;
 
 byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
@@ -33,6 +34,8 @@ unsigned long lastDebounceTime = 0;
 
 int XFaderValue = 0;
 int oldXfaderValue = 0;
+float smoothedXFaderValue = 0;
+const float XFADER_SMOOTHING = 0.3;
 
 int lastPrintedCHANNELValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int lastPrintedPAIRValues[NUM_PAIRS] = {-1, -1, -1, -1};
@@ -79,52 +82,53 @@ void setup()
 void loop()
 {
   int analogValues[NUM_CHANNELS];
-  int pairAverages[NUM_PAIRS];
+  int morphedValues[NUM_PAIRS];
   int XfaderReading = analogRead(A2);
-  float morphFactor = 1.0 - XFaderValue / 1023.0;          // Calculate morph factor
-  int mappedXFaderValue = map(XFaderValue, 0, 1023, 0, 7); // Map crossfader value to 0-7
 
-  static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1}; // Last displayed values
-  static int lastSelectedChannel = -1;                                             // Last selected channel
-
-  analogWrite(pwmPin, mappedXFaderValue);                   // Write PWM value
-  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue)); // Write inverted LED value
-
-  if (XfaderReading != oldXfaderValue) // Check if crossfader value changed
+  if (abs(XfaderReading - oldXfaderValue) <= XFADER_DEADZONE)
   {
-    XFaderValue = XfaderReading; // Update crossfader value
+    XfaderReading = oldXfaderValue;
   }
+  smoothedXFaderValue = smoothedXFaderValue * (1 - XFADER_SMOOTHING) + XfaderReading * XFADER_SMOOTHING;
+  float morphFactor = smoothedXFaderValue / 1023.0;
+  int mappedXFaderValue = map(round(smoothedXFaderValue), 0, 1023, 0, 7);
 
-  // Read analog values for each channel
+  static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  static int lastSelectedChannel = -1;
+
+  analogWrite(pwmPin, mappedXFaderValue);
+  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue));
+
+  // Read analog values for each channel and calculate morphed values
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
-    selectChannel(channel);                                                 // Select channel
-    analogValues[channel] = analogRead(A0);                                 // Read analog value
-    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE); // Map to MIDI value
+    selectChannel(channel);
+    analogValues[channel] = analogRead(A0);
+    int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE);
 
     if (abs(midiValue - lastPrintedCHANNELValues[channel]) >= THRESHOLD)
     {
       lastPrintedCHANNELValues[channel] = midiValue;
-
-      // sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
     }
 
-    // Calculate pair averages and send MIDI if changed
+    // Calculate morphed values for each pair
     if (channel % 2 == 1) // For every odd channel (1, 3, 5, 7)
     {
       int pairIndex = channel / 2;
-      int average = (lastPrintedCHANNELValues[channel - 1] + lastPrintedCHANNELValues[channel]) / 2;
+      int valueA = lastPrintedCHANNELValues[channel - 1];
+      int valueB = lastPrintedCHANNELValues[channel];
+      int morphedValue = (int)(valueA * (1 - morphFactor) + valueB * morphFactor);
 
-      if (abs(average - lastPrintedPAIRValues[pairIndex]) >= THRESHOLD)
+      if (abs(morphedValue - morphedValues[pairIndex]) >= THRESHOLD)
       {
-        lastPrintedPAIRValues[pairIndex] = average;
+        morphedValues[pairIndex] = morphedValue;
 
-        // Send MIDI for the average of the pair
-        sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], average);
+        // Send MIDI for the morphed value of the pair
+        sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], morphedValue);
       }
     }
 
-    // LCD SCREEN
+    // LCD SCREEN update (existing code)
     int barLevel = map(lastPrintedCHANNELValues[channel], 0, MIDI_MAX_VALUE, 0, 7);
     if (lastDisplayedValues[channel] != barLevel || lastSelectedChannel != selectedChannel)
     {
@@ -139,62 +143,61 @@ void loop()
     }
   }
 
+  // Update LCD for morphed values
   lcd.setCursor(0, 0);
   lcd.print("CC");
   lcd.print(midiSettings[selectedChannel][1]);
   lcd.print("X");
   lcd.write((byte)mappedXFaderValue);
-  // lcd.setCursor(0, 1);
-  // lcd.print("MIDI:");
-  // lcd.print(midiSettings[selectedChannel][0]);
 
-  lcd.setCursor(0, 1); // Set cursor to the second row, column 9
-  for (int i = 0; i < sizeof(lastPrintedPAIRValues) / sizeof(lastPrintedPAIRValues[0]); i++)
+  lcd.setCursor(0, 1);
+  for (int i = 0; i < NUM_PAIRS; i++)
   {
-    lcd.print(lastPrintedPAIRValues[i]); // Print each value
-    lcd.print(" ");                      // Add space between values for better readability
+    lcd.print(morphedValues[i]);
+    lcd.print(" ");
   }
+
   oldXfaderValue = XfaderReading;
   lastSelectedChannel = selectedChannel;
 
-  // handleButtonPress();
-  // handleEncoder();
+  handleButtonPress();
+  handleEncoder();
 }
 
-// void handleButtonPress()
-// {
-//   bool currentButtonState = digitalRead(buttonPin);
-//   if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
-//   {
-//     if (currentButtonState == LOW && lastButtonState == HIGH)
-//     {
-//       selectedChannel = (selectedChannel + 1) % NUM_PAIRS;
-//       lcd.clear();
-//     }
-//   }
-//   lastButtonState = currentButtonState;
-// }
+void handleButtonPress()
+{
+  bool currentButtonState = digitalRead(buttonPin);
+  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
+  {
+    if (currentButtonState == LOW && lastButtonState == HIGH)
+    {
+      selectedChannel = (selectedChannel + 1) % NUM_PAIRS;
+      lcd.clear();
+    }
+  }
+  lastButtonState = currentButtonState;
+}
 
-// void handleEncoder()
-// {
-//   int newPosition = myEnc.read() / 4;
-//   if (newPosition != oldEncPosition)
-//   {
-//     lastEncoderDebounceTime = millis();
-//     oldEncPosition = newPosition;
-//   }
+void handleEncoder()
+{
+  int newPosition = myEnc.read() / 4;
+  if (newPosition != oldEncPosition)
+  {
+    lastEncoderDebounceTime = millis();
+    oldEncPosition = newPosition;
+  }
 
-//   if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
-//   {
-//     if (debouncedEncPosition != oldEncPosition)
-//     {
-//       debouncedEncPosition = oldEncPosition;
-//       int relativeChange = debouncedEncPosition - initialEncoderPosition;
-//       midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
-//       initialEncoderPosition = debouncedEncPosition;
-//     }
-//   }
-// }
+  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
+  {
+    if (debouncedEncPosition != oldEncPosition)
+    {
+      debouncedEncPosition = oldEncPosition;
+      int relativeChange = debouncedEncPosition - initialEncoderPosition;
+      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+      initialEncoderPosition = debouncedEncPosition;
+    }
+  }
+}
 
 void selectChannel(int channel)
 {
