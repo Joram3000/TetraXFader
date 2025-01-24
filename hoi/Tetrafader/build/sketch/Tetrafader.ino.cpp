@@ -4,18 +4,18 @@
 #include <LiquidCrystal_I2C.h>
 
 const int NUM_PAIRS = 4;
-const int NUM_CHANNELS = 8;       // Total number of channels
-const int MIDI_MAX_VALUE = 127;   // Maximum MIDI value
-const int PWM_MAX_VALUE = 255;    // Maximum PWM value
-const int DEBOUNCE_DELAY = 20;    // Debounce delay for button and encoder
-const int MIDI_BAUD_RATE = 31250; // MIDI baud rate
-const int THRESHOLD = 2;          // Threshold for MIDI value change
-const int A = 2;                  // Multiplexer control pin A
-const int B = 3;                  // Multiplexer control pin B
-const int C = 4;                  // Multiplexer control pin C
-const int buttonPin = 7;          // Button pin
-const int pwmPin = 10;            // PWM output pin
-const int xfaderLedPin = 11;      // Crossfader LED pin
+const int NUM_CHANNELS = 8;
+const int MIDI_MAX_VALUE = 127;
+const int PWM_MAX_VALUE = 255;
+const int DEBOUNCE_DELAY = 20;
+const int MIDI_BAUD_RATE = 31250;
+const int THRESHOLD = 2;
+const int A = 2;
+const int B = 3;
+const int C = 4;
+const int buttonPin = 7;
+const int pwmPin = 10;
+const int xfaderLedPin = 11;
 
 byte barLevels[8][8] = {
     {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111},
@@ -62,13 +62,9 @@ int selectedChannel = 0;
 void setup();
 #line 79 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
 void loop();
-#line 143 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
-void handleButtonPress();
-#line 157 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
-void handleEncoder();
-#line 178 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
+#line 199 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
 void selectChannel(int channel);
-#line 185 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
+#line 206 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
 void sendMIDIControlChange(int midiChannel, int ccNumber, int value);
 #line 59 "/Users/joram/Documents/Arduino/libraries/Encoder/examples/Basic/hoi/Tetrafader/Tetrafader.ino"
 void setup()
@@ -94,7 +90,7 @@ void setup()
 void loop()
 {
   int analogValues[NUM_CHANNELS];
-
+  int pairAverages[NUM_PAIRS];
   int XfaderReading = analogRead(A2);
   float morphFactor = 1.0 - XFaderValue / 1023.0;          // Calculate morph factor
   int mappedXFaderValue = map(XFaderValue, 0, 1023, 0, 7); // Map crossfader value to 0-7
@@ -121,7 +117,22 @@ void loop()
     {
       lastPrintedCHANNELValues[channel] = midiValue;
 
-      sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
+      // sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
+    }
+
+    // Calculate pair averages and send MIDI if changed
+    if (channel % 2 == 1) // For every odd channel (1, 3, 5, 7)
+    {
+      int pairIndex = channel / 2;
+      int average = (lastPrintedCHANNELValues[channel - 1] + lastPrintedCHANNELValues[channel]) / 2;
+
+      if (abs(average - lastPrintedPAIRValues[pairIndex]) >= THRESHOLD)
+      {
+        lastPrintedPAIRValues[pairIndex] = average;
+
+        // Send MIDI for the average of the pair
+        sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], average);
+      }
     }
 
     // LCD SCREEN
@@ -144,51 +155,57 @@ void loop()
   lcd.print(midiSettings[selectedChannel][1]);
   lcd.print("X");
   lcd.write((byte)mappedXFaderValue);
-  lcd.setCursor(0, 1);
-  lcd.print("MIDI:");
-  lcd.print(midiSettings[selectedChannel][0]);
+  // lcd.setCursor(0, 1);
+  // lcd.print("MIDI:");
+  // lcd.print(midiSettings[selectedChannel][0]);
 
+  lcd.setCursor(0, 1); // Set cursor to the second row, column 9
+  for (int i = 0; i < sizeof(lastPrintedPAIRValues) / sizeof(lastPrintedPAIRValues[0]); i++)
+  {
+    lcd.print(lastPrintedPAIRValues[i]); // Print each value
+    lcd.print(" ");                      // Add space between values for better readability
+  }
   oldXfaderValue = XfaderReading;
   lastSelectedChannel = selectedChannel;
 
-  handleButtonPress();
-  handleEncoder();
+  // handleButtonPress();
+  // handleEncoder();
 }
 
-void handleButtonPress()
-{
-  bool currentButtonState = digitalRead(buttonPin);
-  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
-  {
-    if (currentButtonState == LOW && lastButtonState == HIGH)
-    {
-      selectedChannel = (selectedChannel + 1) % NUM_CHANNELS;
-      lcd.clear();
-    }
-  }
-  lastButtonState = currentButtonState;
-}
+// void handleButtonPress()
+// {
+//   bool currentButtonState = digitalRead(buttonPin);
+//   if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
+//   {
+//     if (currentButtonState == LOW && lastButtonState == HIGH)
+//     {
+//       selectedChannel = (selectedChannel + 1) % NUM_PAIRS;
+//       lcd.clear();
+//     }
+//   }
+//   lastButtonState = currentButtonState;
+// }
 
-void handleEncoder()
-{
-  int newPosition = myEnc.read() / 4;
-  if (newPosition != oldEncPosition)
-  {
-    lastEncoderDebounceTime = millis();
-    oldEncPosition = newPosition;
-  }
+// void handleEncoder()
+// {
+//   int newPosition = myEnc.read() / 4;
+//   if (newPosition != oldEncPosition)
+//   {
+//     lastEncoderDebounceTime = millis();
+//     oldEncPosition = newPosition;
+//   }
 
-  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
-  {
-    if (debouncedEncPosition != oldEncPosition)
-    {
-      debouncedEncPosition = oldEncPosition;
-      int relativeChange = debouncedEncPosition - initialEncoderPosition;
-      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
-      initialEncoderPosition = debouncedEncPosition;
-    }
-  }
-}
+//   if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
+//   {
+//     if (debouncedEncPosition != oldEncPosition)
+//     {
+//       debouncedEncPosition = oldEncPosition;
+//       int relativeChange = debouncedEncPosition - initialEncoderPosition;
+//       midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+//       initialEncoderPosition = debouncedEncPosition;
+//     }
+//   }
+// }
 
 void selectChannel(int channel)
 {

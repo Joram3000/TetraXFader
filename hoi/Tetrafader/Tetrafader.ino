@@ -79,7 +79,7 @@ void setup()
 void loop()
 {
   int analogValues[NUM_CHANNELS];
-
+  int pairAverages[NUM_PAIRS];
   int XfaderReading = analogRead(A2);
   float morphFactor = 1.0 - XFaderValue / 1023.0;          // Calculate morph factor
   int mappedXFaderValue = map(XFaderValue, 0, 1023, 0, 7); // Map crossfader value to 0-7
@@ -109,6 +109,21 @@ void loop()
       // sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
     }
 
+    // Calculate pair averages and send MIDI if changed
+    if (channel % 2 == 1) // For every odd channel (1, 3, 5, 7)
+    {
+      int pairIndex = channel / 2;
+      int average = (lastPrintedCHANNELValues[channel - 1] + lastPrintedCHANNELValues[channel]) / 2;
+
+      if (abs(average - lastPrintedPAIRValues[pairIndex]) >= THRESHOLD)
+      {
+        lastPrintedPAIRValues[pairIndex] = average;
+
+        // Send MIDI for the average of the pair
+        sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], average);
+      }
+    }
+
     // LCD SCREEN
     int barLevel = map(lastPrintedCHANNELValues[channel], 0, MIDI_MAX_VALUE, 0, 7);
     if (lastDisplayedValues[channel] != barLevel || lastSelectedChannel != selectedChannel)
@@ -129,10 +144,16 @@ void loop()
   lcd.print(midiSettings[selectedChannel][1]);
   lcd.print("X");
   lcd.write((byte)mappedXFaderValue);
-  lcd.setCursor(0, 1);
-  lcd.print("MIDI:");
-  lcd.print(midiSettings[selectedChannel][0]);
+  // lcd.setCursor(0, 1);
+  // lcd.print("MIDI:");
+  // lcd.print(midiSettings[selectedChannel][0]);
 
+  lcd.setCursor(0, 1); // Set cursor to the second row, column 9
+  for (int i = 0; i < sizeof(lastPrintedPAIRValues) / sizeof(lastPrintedPAIRValues[0]); i++)
+  {
+    lcd.print(lastPrintedPAIRValues[i]); // Print each value
+    lcd.print(" ");                      // Add space between values for better readability
+  }
   oldXfaderValue = XfaderReading;
   lastSelectedChannel = selectedChannel;
 
