@@ -106,7 +106,7 @@ void loop()
     {
       lastPrintedCHANNELValues[channel] = midiValue;
 
-      sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
+      // sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
     }
 
     // LCD SCREEN
@@ -136,44 +136,44 @@ void loop()
   oldXfaderValue = XfaderReading;
   lastSelectedChannel = selectedChannel;
 
-  handleButtonPress();
-  handleEncoder();
+  // handleButtonPress();
+  // handleEncoder();
 }
 
-void handleButtonPress()
-{
-  bool currentButtonState = digitalRead(buttonPin);
-  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
-  {
-    if (currentButtonState == LOW && lastButtonState == HIGH)
-    {
-      selectedChannel = (selectedChannel + 1) % NUM_CHANNELS;
-      lcd.clear();
-    }
-  }
-  lastButtonState = currentButtonState;
-}
+// void handleButtonPress()
+// {
+//   bool currentButtonState = digitalRead(buttonPin);
+//   if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
+//   {
+//     if (currentButtonState == LOW && lastButtonState == HIGH)
+//     {
+//       selectedChannel = (selectedChannel + 1) % NUM_PAIRS;
+//       lcd.clear();
+//     }
+//   }
+//   lastButtonState = currentButtonState;
+// }
 
-void handleEncoder()
-{
-  int newPosition = myEnc.read() / 4;
-  if (newPosition != oldEncPosition)
-  {
-    lastEncoderDebounceTime = millis();
-    oldEncPosition = newPosition;
-  }
+// void handleEncoder()
+// {
+//   int newPosition = myEnc.read() / 4;
+//   if (newPosition != oldEncPosition)
+//   {
+//     lastEncoderDebounceTime = millis();
+//     oldEncPosition = newPosition;
+//   }
 
-  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
-  {
-    if (debouncedEncPosition != oldEncPosition)
-    {
-      debouncedEncPosition = oldEncPosition;
-      int relativeChange = debouncedEncPosition - initialEncoderPosition;
-      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
-      initialEncoderPosition = debouncedEncPosition;
-    }
-  }
-}
+//   if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
+//   {
+//     if (debouncedEncPosition != oldEncPosition)
+//     {
+//       debouncedEncPosition = oldEncPosition;
+//       int relativeChange = debouncedEncPosition - initialEncoderPosition;
+//       midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+//       initialEncoderPosition = debouncedEncPosition;
+//     }
+//   }
+// }
 
 void selectChannel(int channel)
 {
