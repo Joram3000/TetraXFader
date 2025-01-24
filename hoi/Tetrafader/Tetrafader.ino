@@ -77,6 +77,8 @@ void setup()
   }
 
   Serial.begin(MIDI_BAUD_RATE);
+
+  TCCR1B = TCCR1B & B11111000 | B00000001;
 }
 
 void loop()
@@ -95,7 +97,6 @@ void loop()
   float morphFactor = 1.0 - smoothedXFaderValue / 1023.0;
   uint8_t mappedXFaderValue = map(round(smoothedXFaderValue), 0, 1023, 0, 7);
 
-  analogWrite(pwmPin, mappedXFaderValue);
   analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue));
 
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++)
@@ -103,6 +104,7 @@ void loop()
     selectChannel(channel);
     int16_t analogValue = analogRead(A0);
     uint8_t midiValue = map(analogValue, 0, 1023, 0, MIDI_MAX_VALUE);
+    analogWrite(pwmPin, midiValue * 2);
 
     if (abs(midiValue - lastPrintedCHANNELValues[channel]) >= THRESHOLD)
     {
