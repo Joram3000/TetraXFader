@@ -1,14 +1,13 @@
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
-// Constants
-const int NUM_PAIRS = 4;          // Number of pairs of channels
+const int NUM_PAIRS = 4;
 const int NUM_CHANNELS = 8;       // Total number of channels
 const int MIDI_MAX_VALUE = 127;   // Maximum MIDI value
 const int PWM_MAX_VALUE = 255;    // Maximum PWM value
 const int DEBOUNCE_DELAY = 20;    // Debounce delay for button and encoder
 const int MIDI_BAUD_RATE = 31250; // MIDI baud rate
-const int THRESHOLD = 2;          // Threshold for MIDI value change
+const int THRESHOLD = 4;          // Threshold for MIDI value change
 const int A = 2;                  // Multiplexer control pin A
 const int B = 3;                  // Multiplexer control pin B
 const int C = 4;                  // Multiplexer control pin C
@@ -79,14 +78,17 @@ void setup()
 
 void loop()
 {
-  int analogValues[NUM_CHANNELS];                                                  // Array to store analog values
-  int XfaderReading = analogRead(A2);                                              // Read crossfader value
-  float morphFactor = 1.0 - XFaderValue / 1023.0;                                  // Calculate morph factor
+  int analogValues[NUM_CHANNELS];     // Array to store analog values
+  int XfaderReading = analogRead(A2); // Read crossfader value
+
+  float morphFactor = 1.0 - XFaderValue / 1023.0;          // Calculate morph factor
+  int mappedXFaderValue = map(XFaderValue, 0, 1023, 0, 7); // Map crossfader value to 0-7
+
   static int lastDisplayedValues[NUM_CHANNELS] = {-1, -1, -1, -1, -1, -1, -1, -1}; // Last displayed values
   static int lastSelectedChannel = -1;                                             // Last selected channel
-  int mappedXFaderValue = map(XFaderValue, 0, 1023, 7, 0);                         // Map crossfader value to 0-7
-  analogWrite(pwmPin, mappedXFaderValue);                                          // Write PWM value
-  analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue));                        // Write inverted LED value
+
+  // analogWrite(pwmPin, mappedXFaderValue);                                          // Write PWM value
+  // analogWrite(xfaderLedPin, max(0, 4 - mappedXFaderValue));                        // Write inverted LED value
 
   if (XfaderReading != oldXfaderValue) // Check if crossfader value changed
   {
@@ -96,12 +98,21 @@ void loop()
   // Read analog values for each channel
   for (int channel = 0; channel < NUM_CHANNELS; channel++)
   {
-    selectChannel(channel);                                                 // Select channel
-    analogValues[channel] = analogRead(A0);                                 // Read analog value
+    selectChannel(channel);                 // Select channel
+    analogValues[channel] = analogRead(A0); // Read analog value
+
     int midiValue = map(analogValues[channel], 0, 1023, 0, MIDI_MAX_VALUE); // Map to MIDI value
-    lastPrintedValues[channel] = midiValue;                                 // Update last printed value
+    // lastPrintedValues[channel] = midiValue;                                 // Update last printed value
+
+    if (abs(midiValue - lastPrintedValues[channel]) >= THRESHOLD)
+    {
+      lastPrintedValues[channel] = midiValue; // Update the last printed value
+      // Send MIDI CC message
+      sendMIDIControlChange(midiSettings[channel][0], midiSettings[channel][1], midiValue);
+    }
 
     int barLevel = map(lastPrintedValues[channel], 0, MIDI_MAX_VALUE, 0, 7);
+
     if (lastDisplayedValues[channel] != barLevel || lastSelectedChannel != selectedChannel)
     {
       int col = 8 + channel;
@@ -115,19 +126,19 @@ void loop()
     }
   }
 
-  // Calculate and send MIDI values for pairs of channels
-  for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
-  {
-    int morphedValue = analogValues[pair] * (1 - morphFactor) + analogValues[pair + 1] * morphFactor; // Calculate morphed value
-    int midiValue = map(morphedValue, 0, 1023, 0, MIDI_MAX_VALUE);                                    // Map to MIDI value
+  // // Calculate and send MIDI values for pairs of channels
+  // for (int pair = 0; pair < NUM_CHANNELS; pair += 2)
+  // {
+  //   int morphedValue = analogValues[pair] * (1 - morphFactor) + analogValues[pair + 1] * morphFactor; // Calculate morphed value
+  //   int midiValue = map(morphedValue, 0, 1023, 0, MIDI_MAX_VALUE);                                    // Map to MIDI value
 
-    if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD) // Check if value changed significantly
-    {
-      lastPrintedPairValues[pair] = midiValue; // Update last printed pair value
+  //   if (abs(midiValue - lastPrintedPairValues[pair]) >= THRESHOLD) // Check if value changed significantly
+  //   {
+  //     lastPrintedPairValues[pair] = midiValue; // Update last printed pair value
 
-      sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue); // Send MIDI control change
-    }
-  }
+  //     sendMIDIControlChange(midiSettings[pair][0], midiSettings[pair][1], midiValue); // Send MIDI control change
+  //   }
+  // }
 
   // Update LCD display
   lcd.setCursor(0, 0);
@@ -169,19 +180,18 @@ void handleEncoder()
     oldEncPosition = newPosition;       // Update old position
   }
 
-  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY) // Check debounce delay
+  if ((millis() - lastEncoderDebounceTime) > DEBOUNCE_DELAY)
   {
-    if (debouncedEncPosition != oldEncPosition) // Check if debounced position changed
+    if (debouncedEncPosition != oldEncPosition)
     {
-      debouncedEncPosition = oldEncPosition;                                                                              // Update debounced position
-      int relativeChange = debouncedEncPosition - initialEncoderPosition;                                                 // Calculate relative change
-      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE); // Update MIDI value
-      initialEncoderPosition = debouncedEncPosition;                                                                      // Update initial position
+      debouncedEncPosition = oldEncPosition;
+      int relativeChange = debouncedEncPosition - initialEncoderPosition;
+      midiSettings[selectedChannel][1] = constrain(midiSettings[selectedChannel][1] + relativeChange, 0, MIDI_MAX_VALUE);
+      initialEncoderPosition = debouncedEncPosition;
     }
   }
 }
 
-// Select multiplexer channel
 void selectChannel(int channel)
 {
   digitalWrite(A, channel & 0x01);
