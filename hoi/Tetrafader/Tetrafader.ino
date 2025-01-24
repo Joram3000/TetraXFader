@@ -1,3 +1,8 @@
+// Dit is de code voor de Tetrafader 
+// van 8 potmeters, die in 2 pairs verbonden zijn
+// en een crossfader. De potmeters sturen MIDI CC
+
+
 #include <Encoder.h>
 #include <LiquidCrystal_I2C.h>
 
