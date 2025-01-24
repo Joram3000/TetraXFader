@@ -115,7 +115,7 @@ void loop()
 
   for (uint8_t channel = 0; channel < NUM_CHANNELS; channel++)
   {
-    selectChannel(channel);
+    selectChannel(7);
     int16_t analogValue = analogRead(A0);
     uint8_t midiValue = map(analogValue, 0, 1023, 0, MIDI_MAX_VALUE);
 
